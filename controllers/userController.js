@@ -61,14 +61,14 @@ module.exports.login = async (req, res) => {
         }
 
         // finding user with phone no: 
-        const user = await User.findOne({ phoneNo });
+        let user = await User.findOne({ phoneNo });
 
         // if user is not found: 
         if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "User not found.. Please check phone number.."
-            })
+            user = new User({ phoneNo });
+            await user.save();
+
+            console.log("New user created:", user);
         }
 
         // if user is found, generating OTP for user: 
@@ -80,7 +80,7 @@ module.exports.login = async (req, res) => {
 
         // creating new record for generated otp for verification: 
         const otpDoc = new OTP({
-            userId: user.id,
+            userId: user._id,
             otpCode: providedOTP
         })
         // saving the otp:
@@ -97,6 +97,7 @@ module.exports.login = async (req, res) => {
             otpDoc
         })
     } catch (error) {
+        console.error("Server error:", error);
         return res.status(500).json({
             success: false,
             message: error.message,

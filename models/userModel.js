@@ -3,30 +3,30 @@ const mongoose = require('mongoose');
 const userSchema = mongoose.Schema({
     name: {
         type: String,
-        required: true,
+        // required: true,
     },
     email: {
         type: String,
-        required: true,
+        // required: true,
     },
     gender: {
         type: String,
         enum: ['Male', 'Female', 'Other'],
-        required: true,
+        // required: true,
     },
     role: {
         type: String,
         enum: ['Patient', 'Doctor'],
-        required: true,
+        // required: true,
         default: 'Patient'
     },
     phoneNo: {
         type: String,
-        required: true,
+        // required: true,
     },
     city: {
         type: String,
-        required: true,
+        // required: true,
     },
     profileImg: {
         key: {
