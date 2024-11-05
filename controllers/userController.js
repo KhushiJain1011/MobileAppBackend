@@ -39,6 +39,7 @@ module.exports.register = async (req, res) => {
         user.gender = gender;
         user.birthDate = birthDate;
         user.city = city;
+        user.isNewUser = false;
 
         await user.save();
 
@@ -175,7 +176,8 @@ module.exports.verifyOTP = async (req, res) => {
         return res.status(200).json({
             success: true,
             message: "OTP verified successfully",
-            accessToken
+            accessToken,
+            isNewUser: user.isNewUser
         })
     } catch (error) {
         return res.status(500).json({
@@ -225,6 +227,7 @@ module.exports.sendVerifyEmailLink = async (req, res) => {
     }
 }
 
+// VERIFY EMAIL: 
 module.exports.verifyEmail = async (req, res) => {
     try {
         const { token } = req.params;
