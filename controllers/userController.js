@@ -12,11 +12,12 @@ require("dotenv").config();
 // USER REGISTRATION:
 module.exports.register = async (req, res) => {
     try {
+        const { userId } = req.params;
         // getting user details: 
-        const { name, email, phoneNo, gender, dateOfBirth, city } = req.body;
+        const { name, email, gender, dateOfBirth, city } = req.body;
 
         // if required details are not provided: 
-        if (!name || !email) {
+        if (!name || !email || !gender || !city || !dateOfBirth) {
             return res.status(400).json({
                 success: false,
                 message: "Provide required details"
@@ -24,14 +25,22 @@ module.exports.register = async (req, res) => {
         }
 
         // creating record for user(patient): 
-        const user = await User.create({
-            name,
-            email,
-            phoneNo,
-            gender,
-            dateOfBirth,
-            city
-        })
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            })
+        }
+
+        // UPDATE USER DETAILS: 
+        user.name = name;
+        user.email = email;
+        user.gender = gender;
+        user.dateOfBirth = dateOfBirth;
+        user.city = city;
+
+        await user.save();
 
         return res.status(201).json({
             success: true,
