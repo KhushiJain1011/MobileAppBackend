@@ -12,6 +12,19 @@ module.exports.registerValidator = [
                 throw new Error("User with this email already exists.. Try another one!!")
             }
         }),
+
+    body("name")
+        .notEmpty().withMessage("Please enter name")
+        .isLength({ min: 2, max: 50 }).withMessage("Minimum length for name should be 2"),
+
+    body("gender")
+        .notEmpty().withMessage("Please select gender"),
+
+    body("birthDate")
+        .notEmpty().withMessage("Please fill birth date"),
+
+    body("city")
+        .notEmpty().withMessage("Please select a city")
 ]
 
 module.exports.loginValidator = [

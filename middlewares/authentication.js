@@ -24,11 +24,11 @@ module.exports = async function (req, res, next) {
 
         // Verify token: 
         const decoded = jwt.verify(JWT_TOKEN, process.env.JWT_SECRET_KEY);
-        console.log("Decoded: ", decoded);
+        // console.log("Decoded: ", decoded);
 
         // Extract user id from decoded token: 
         const userId = decoded.id;
-        console.log("user id: ", userId);
+        // console.log("user id: ", userId);
 
         // finding user from db using user id: 
         const user = await User.findById(userId);

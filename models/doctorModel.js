@@ -1,13 +1,13 @@
 const mongoose = require('mongoose');
 
 const doctorSchema = mongoose.Schema({
-    user: {
+    userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'userModel',
         required: true,
     },
     experience: {
-        type: String,
+        type: Number,
         required: true,
     },
     qualifications: {
@@ -23,11 +23,20 @@ const doctorSchema = mongoose.Schema({
         type: Array,
         // required: true,
     },
-    services: [{ type: String }],
+    services: [{ type: String }],       // Array of services like "General Consultation", "Surgery"
     ratings: {
         type: Number,
         default: 0,
-    }
+    },
+    liveStatus: {
+        type: Boolean,
+        default: false
+    }, // Indicates if the doctor is currently live streaming
+    certifications: [{
+        name: String,
+        institution: String,
+        year: Number
+    }],
 })
 
 

@@ -5,6 +5,10 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 
 const userRoutes = require("./routes/userRoutes");
+const doctorRoutes = require("./routes/doctorRoutes");
+const patientRoutes = require("./routes/patientRoutes");
+const appointmentRoutes = require("./routes/appointmentRoutes");
+const categoryRoutes = require("./routes/categoryRoutes");
 
 // require('dotenv').config({ path: './.env' });
 
@@ -19,6 +23,11 @@ app.use(express.json());
 // console.log("mongo url: ", process.env.URL)
 
 app.use("/api/user", userRoutes);
+app.use("/api/doctor", doctorRoutes);
+app.use("/api/patient", patientRoutes);
+app.use("/api/appointment", appointmentRoutes);
+app.use("/api/category", categoryRoutes);
+
 
 mongoose.connect(url)
     .then(() => console.log("CONNECTED TO MONGODB!!"))
