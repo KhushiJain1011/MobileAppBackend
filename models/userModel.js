@@ -38,6 +38,10 @@ const userSchema = mongoose.Schema({
     },
     birthDate: {
         type: Date,
+    },
+    isEmailVerified: {
+        type: Boolean,
+        default: false,
     }
 })
 

@@ -14,10 +14,10 @@ module.exports.register = async (req, res) => {
     try {
         const { userId } = req.params;
         // getting user details: 
-        const { name, email, gender, dateOfBirth, city } = req.body;
+        const { name, email, gender, birthDate, city } = req.body;
 
         // if required details are not provided: 
-        if (!name || !email || !gender || !city || !dateOfBirth) {
+        if (!name || !email || !gender || !city || !birthDate) {
             return res.status(400).json({
                 success: false,
                 message: "Provide required details"
@@ -37,7 +37,7 @@ module.exports.register = async (req, res) => {
         user.name = name;
         user.email = email;
         user.gender = gender;
-        user.dateOfBirth = dateOfBirth;
+        user.birthDate = birthDate;
         user.city = city;
 
         await user.save();
@@ -188,9 +188,10 @@ module.exports.verifyOTP = async (req, res) => {
 // SEND LINK TO VERIFY EMAIL ADDRESS: 
 module.exports.sendVerifyEmailLink = async (req, res) => {
     try {
+        const { userId } = req.params;
         const { email } = req.body;
 
-        const user = await User.findOne({ email });
+        const user = await User.findById(userId);
         if (!user) {
             return res.status(404).json({
                 success: false,
@@ -207,8 +208,8 @@ module.exports.sendVerifyEmailLink = async (req, res) => {
         })
         await token.save();
 
-        const verificationLink = `http://localhost:6000/verifyEmail/${verificationToken}`;
-        sendVerificationMail(email, "Email verification", `Hello ${user.name}. Your link for email verification is: ${verificationLink}`);
+        const verificationLink = `http://localhost:6000/api/user/verifyEmail/${verificationToken}`;
+        sendVerificationMail(email, "Email verification", `Hello. Your link for email verification is: ${verificationLink}`);
 
         // sendVerificationMail(email, "verification mail", "sample test message");
         return res.status(200).json({
@@ -216,6 +217,47 @@ module.exports.sendVerifyEmailLink = async (req, res) => {
             message: "Email for verification sent",
 
         })
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        })
+    }
+}
+
+module.exports.verifyEmail = async (req, res) => {
+    try {
+        const { token } = req.params;
+
+        const verificationToken = await Token.findOne({ token });
+
+        // console.log("token: ", verificationToken);
+
+        if (!verificationToken) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid or expired verification token"
+            })
+        }
+
+        // console.log("user id: ", verificationToken.userId)
+        const user = await User.findById(verificationToken.userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            })
+        }
+
+        user.isEmailVerified = true;
+        await user.save();
+
+        await Token.deleteOne({ _id: verificationToken._id });
+
+        return res.status(500).json({
+            success: true,
+            message: "Email verified successfully!!"
+        });
     } catch (error) {
         return res.status(500).json({
             success: false,

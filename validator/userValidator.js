@@ -20,7 +20,7 @@ module.exports.registerValidator = [
     body("gender")
         .notEmpty().withMessage("Please select gender"),
 
-    body("dateOfBirth")
+    body("birthDate")
         .notEmpty().withMessage("Please fill birth date"),
 
     body("city")
