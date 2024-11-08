@@ -3,9 +3,16 @@ const { sendSMS, generateOTP, generateToken, generateEmailVerificationToken } = 
 const User = require("../models/userModel")
 const OTP = require("../models/otpModel");
 const Token = require("../models/tokenModel");
+const Patient = require("../models/patientModel");
+const Appointment = require("../models/appointmentModel");
 const { sendVerificationMail } = require("../helper/sendEmail");
 const multer = require("multer");
 const { upload } = require("../middlewares/multer");
+const { emailVerification } = require("../views/emailVerification");
+const ejs = require('ejs');
+const path = require('path');
+const fs = require('fs');
+
 
 require("dotenv").config();
 
@@ -201,6 +208,9 @@ module.exports.sendVerifyEmailLink = async (req, res) => {
             })
         }
 
+        // Delete any existing tokens for the user
+        await Token.deleteMany({ userId: user.id });
+
         const verificationToken = await generateEmailVerificationToken();
         // console.log("ver token: ", verificationToken);
 
@@ -210,8 +220,90 @@ module.exports.sendVerifyEmailLink = async (req, res) => {
         })
         await token.save();
 
-        const verificationLink = `http://localhost:6000/api/user/verifyEmail/${verificationToken}`;
-        sendVerificationMail(email, "Email verification", `Hello. Your link for email verification is: ${verificationLink}`);
+        const verificationLink = `http://localhost:3000/api/user/verifyEmail/${verificationToken}`;
+
+        // Render the EJS template
+        // const templatePath = path.join(__dirname, '../views', 'emailVerification.ejs');
+        // const emailBody = await ejs.render(fs.readFileSync(templatePath, 'utf-8'), {
+        //     verificationLink: verificationLink
+        // });
+
+        const temp = `
+        <!DOCTYPE html>
+        <html lang="en">
+
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Email Verification</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 0;
+                    padding: 20px;
+                    background-color: #f4f4f4;
+                }
+
+                .container {
+                    max-width: 600px;
+                    margin: auto;
+                    background: white;
+                    padding: 20px;
+                    border-radius: 5px;
+                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                }
+
+                h1 {
+                    color: #333;
+                }
+
+                p {
+                    font-size: 16px;
+                    color: #555;
+                }
+
+                .button {
+                    display: inline-block;
+                    padding: 15px 30px;
+                    font-size: 16px;
+                    color: white;
+                    background-color: #4CAF50; /* Green */
+                    text-decoration: none;
+                    border-radius: 5px;
+                    margin-top: 20px;
+                }
+
+                .button:hover {
+                    background-color: #45a049;
+                }
+            </style>
+        </head>
+
+        <body>
+            <div class="container">
+                <h1>Email Verification</h1>
+                <p>Hello,</p>
+                <p>Your link for email verification is this: </p>
+                <a href="${verificationLink}" class="button">Verify Email</a>
+                <p> This is valid for 5 minutes.</p>
+                <p>If you did not request this email, please ignore it.</p>
+
+            </div>
+        </body>
+
+    </html>
+`
+
+        // // Generate the email body
+        // const emailBody = await emailVerification(verificationLink); // Await the result
+
+        await sendVerificationMail(
+            email,
+            "Email verification",
+            // `Hello. Your link for email verification is: ${verificationLink}`,
+            // emailBody
+            temp
+        );
 
         // sendVerificationMail(email, "verification mail", "sample test message");
         return res.status(200).json({
@@ -229,14 +321,17 @@ module.exports.sendVerifyEmailLink = async (req, res) => {
 
 // VERIFY EMAIL: 
 module.exports.verifyEmail = async (req, res) => {
+    console.log('Received verification request with token:', req.params.token); // Log the received token
+
     try {
         const { token } = req.params;
 
         const verificationToken = await Token.findOne({ token });
 
-        // console.log("token: ", verificationToken);
+        console.log("token: ", verificationToken);
 
         if (!verificationToken) {
+            console.log("no verification token found ")
             return res.status(400).json({
                 success: false,
                 message: "Invalid or expired verification token"
@@ -246,6 +341,7 @@ module.exports.verifyEmail = async (req, res) => {
         // console.log("user id: ", verificationToken.userId)
         const user = await User.findById(verificationToken.userId);
         if (!user) {
+            console.log("no user found")
             return res.status(404).json({
                 success: false,
                 message: "User not found"
@@ -253,21 +349,29 @@ module.exports.verifyEmail = async (req, res) => {
         }
 
         user.isEmailVerified = true;
+        console.log("email verified: ", user.isEmailVerified);
         await user.save();
 
         await Token.deleteOne({ _id: verificationToken._id });
 
-        return res.status(500).json({
+        // Redirect to a success page
+        // return res.redirect('http://localhost:3000/verificationSuccess.html'); // Change this to your actual success URL
+
+        return res.status(200).json({
             success: true,
-            message: "Email verified successfully!!"
+            message: "Email verified successfully!!",
+            redirectUrl: '/verificationSuccess.html'
         });
     } catch (error) {
         return res.status(500).json({
             success: false,
             message: error.message
         })
+        // return res.redirect('http://localhost:3000/api/user/verificationFailure.html'); // Change this to your actual success URL
+
     }
 }
+
 
 // UPLOAD (ADD OR EDIT) PROFILE IMAGE: 
 module.exports.uploadProfilePic = async (req, res) => {
@@ -325,4 +429,73 @@ module.exports.uploadProfilePic = async (req, res) => {
             })
         }
     })
+}
+
+
+// // DELETE USER: 
+// module.exports.deleteUser = async (req, res) => {
+//     try {
+//         const { userId } = req.params;
+
+//         // Find the user by id: 
+//         const user = await User.findOneAndDelete({ _id: userId });
+//         if (!user) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: "User not found.."
+//             });
+//         }
+
+//         return res.status(200).json({
+//             success: true,
+//             message: "User deleted successfully!!"
+//         })
+//     } catch (error) {
+//         return res.status(500).json({
+//             success: false,
+//             message: error.message
+//         })
+//     }
+// }
+
+module.exports.deleteUser = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        // console.log("user id: ", userId);
+        const patient = await Patient.findOne({ userId: userId });
+        if (!patient) {
+            return res.status(404).json({
+                success: false,
+                message: "Patient not found"
+            });
+        }
+
+        // delete related appointment records: 
+        // console.log("patient id : ", patient._id);
+        await Appointment.deleteMany({ patient: patient._id });
+
+        // delete the patient records:
+        await Patient.deleteMany({ userId: userId });
+
+
+        // Delete the user: 
+        const result = await User.findByIdAndDelete(userId);
+
+        if (!result) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            })
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "User deleted successfully"
+        })
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        })
+    }
 }

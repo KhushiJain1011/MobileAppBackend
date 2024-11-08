@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const Patient = require("../models/patientModel");
+const Appointment = require("../models/appointmentModel");
 
 const userSchema = mongoose.Schema({
     name: {

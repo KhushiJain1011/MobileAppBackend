@@ -1,5 +1,5 @@
 const express = require("express");
-const { login, register, verifyOTP, sendVerifyEmailLink, uploadProfilePic, verifyEmail } = require("../controllers/userController");
+const { login, register, verifyOTP, sendVerifyEmailLink, uploadProfilePic, verifyEmail, deleteUser } = require("../controllers/userController");
 const { validate } = require("../middlewares/validate");
 const { registerValidator, loginValidator } = require("../validator/userValidator");
 const authenticate = require("../middlewares/authentication");
@@ -19,9 +19,20 @@ router.post("/verifyOTP/:userId", verifyOTP);
 router.post("/sendVerifyEmailLink/:userId", sendVerifyEmailLink);
 
 // verify email: 
-router.post("/verifyEmail/:token", verifyEmail);
+router.get("/verifyEmail/:token", verifyEmail);
 
 // upload (or edit) profile image: 
 router.post("/uploadProfilePicture", authenticate, uploadProfilePic);
+
+// Delete user: 
+router.delete("/deleteUser/:userId", authenticate, deleteUser);
+
+router.get('/verification-success', (req, res) => {
+    res.render('verification-success'); // Ensure this view exists
+});
+
+router.get('/verification-failure', (req, res) => {
+    res.render('verification-failure'); // Ensure this view exists
+});
 
 module.exports = router;
