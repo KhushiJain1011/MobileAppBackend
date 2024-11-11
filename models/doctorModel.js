@@ -1,21 +1,43 @@
 const mongoose = require('mongoose');
 
 const doctorSchema = mongoose.Schema({
-    userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'userModel',
-        required: true,
+    // userId: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'userModel',
+    //     required: true,
+    // },
+    doctorName: {
+        type: String,
+    },
+    gender: {
+        type: String,
+        enum: ['Male', 'Female', 'Other'],
+    },
+    city: {
+        type: String
+    },
+    consultationFee: {
+        type: Number,
     },
     experience: {
         type: Number,
         required: true,
     },
-    qualifications: {
+    qualificationOne: {
         // degrees or certificates
         type: String,
         required: true,
     },
-    specialization: {
+    qualificationTwo: {
+        // degrees or certificates
+        type: String,
+        // required: true,
+    },
+    specializationOne: {
+        type: String,
+        required: true,
+    },
+    specializationTwo: {
         type: String,
         required: true,
     },
@@ -23,7 +45,15 @@ const doctorSchema = mongoose.Schema({
         type: Array,
         // required: true,
     },
-    services: [{ type: String }],       // Array of services like "General Consultation", "Surgery"
+    serviceOne: {
+        type: String
+    },
+    serviceTwo: {
+        type: String
+    },
+    serviceThree: {
+        type: String
+    },
     ratings: {
         type: Number,
         default: 0,
@@ -32,11 +62,6 @@ const doctorSchema = mongoose.Schema({
         type: Boolean,
         default: false
     }, // Indicates if the doctor is currently live streaming
-    certifications: [{
-        name: String,
-        institution: String,
-        year: Number
-    }],
 })
 
 

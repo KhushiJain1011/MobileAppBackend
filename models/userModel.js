@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Patient = require("../models/patientModel");
 const Appointment = require("../models/appointmentModel");
+const Wallet = require("../models/walletModel")
 
 const userSchema = mongoose.Schema({
     name: {
@@ -48,6 +49,24 @@ const userSchema = mongoose.Schema({
     isNewUser: {
         type: Boolean,
         default: true,
+    }
+})
+
+// After saving a new user, automatically create their wallet with default values: 
+userSchema.post('save', async function (doc, next) {
+    try {
+        // create a new wallet for the user: 
+        const newWallet = new Wallet({
+            userId: doc._id,
+            balance: 0,
+            transactionHistory: []
+        });
+
+        // save the wallet: 
+        await newWallet.save();
+        next();
+    } catch (error) {
+        next(error)
     }
 })
 

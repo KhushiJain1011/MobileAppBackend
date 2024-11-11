@@ -1,35 +1,119 @@
 const mongoose = require('mongoose');
+const Wallet = require("../models/walletModel")
 
 const patientSchema = mongoose.Schema({
-    userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'userModel',
-        required: true,
-    },
-    userName: {
+    // userId: {
+    //     type: mongoose.Schema.Types.ObjectId,
+    //     ref: 'userModel',
+    //     required: true,
+    // },
+    name: {
         type: String,
     },
-    medicalRecords: [{
-        recordType: String, // e.g., "Prescription", "Lab Report"
-        description: String,
-        recordDate: Date,
-        documentUrl: String // URL for accessing record files
-    }],
-    allergies: [{
-        type: String
-    }],
-    emergencyContact: {
-        name: { type: String },
-        phoneNo: { type: String },
-        relationship: { type: String }
+    email: {
+        type: String,
     },
-    insuranceDetails: {
-        provider: String,
-        policyNumber: String,
-        coverageAmount: Number
+    gender: {
+        type: String,
+        enum: ['Male', 'Female', 'Other'],
+    },
+    phoneNo: {
+        type: String,
+        // required: true,
+    },
+    city: {
+        type: String,
+        // required: true,
+    },
+    profileImg: {
+        key: {
+            type: String,
+        },
+        url: {
+            type: String,
+        }
+    },
+    birthDate: {
+        type: Date,
+    },
+    isEmailVerified: {
+        type: Boolean,
+        default: false,
+    },
+    isNewUser: {
+        type: Boolean,
+        default: true,
+    },
+    emergencyContactName: {
+        type: String,
+    },
+    emergencyContactPhone: {
+        type: String,
+    },
+    emergencyContactRelation: {
+        type: String,
+    },
+})
+
+// After saving a new user, automatically create their wallet with default values: 
+patientSchema.post('save', async function (doc, next) {
+    try {
+        // create a new wallet for the user: 
+        const newWallet = new Wallet({
+            userId: doc._id,
+            balance: 0,
+            transactionHistory: []
+        });
+
+        // save the wallet: 
+        await newWallet.save();
+        next();
+    } catch (error) {
+        next(error)
     }
 })
 
 const patientModel = mongoose.model('patientModel', patientSchema);
 
 module.exports = patientModel;
+
+
+
+
+
+
+// const mongoose = require('mongoose');
+
+// const patientSchema = mongoose.Schema({
+//     userId: {
+//         type: mongoose.Schema.Types.ObjectId,
+//         ref: 'userModel',
+//         required: true,
+//     },
+//     userName: {
+//         type: String,
+//     },
+//     medicalRecords: [{
+//         recordType: String, // e.g., "Prescription", "Lab Report"
+//         description: String,
+//         recordDate: Date,
+//         documentUrl: String // URL for accessing record files
+//     }],
+//     allergies: [{
+//         type: String
+//     }],
+//     emergencyContact: {
+//         name: { type: String },
+//         phoneNo: { type: String },
+//         relationship: { type: String }
+//     },
+//     insuranceDetails: {
+//         provider: String,
+//         policyNumber: String,
+//         coverageAmount: Number
+//     }
+// })
+
+// const patientModel = mongoose.model('patientModel', patientSchema);
+
+// module.exports = patientModel;

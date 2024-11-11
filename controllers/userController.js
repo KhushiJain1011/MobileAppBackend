@@ -5,6 +5,7 @@ const OTP = require("../models/otpModel");
 const Token = require("../models/tokenModel");
 const Patient = require("../models/patientModel");
 const Appointment = require("../models/appointmentModel");
+const Wallet = require("../models/walletModel");
 const { sendVerificationMail } = require("../helper/sendEmail");
 const multer = require("multer");
 const { upload } = require("../middlewares/multer");
@@ -52,7 +53,7 @@ module.exports.register = async (req, res) => {
 
         return res.status(201).json({
             success: true,
-            message: "Registered successfully!!",
+            message: "User registered successfully!!",
             user
         })
     } catch (error) {
@@ -109,8 +110,9 @@ module.exports.login = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "OTP sent to your phone number successfully",
+            message: "OTP sent to your phone number successfully!!",
             userId: user._id,
+            isNewUser: user.isNewUser,
             otpDoc
         })
     } catch (error) {
@@ -469,6 +471,9 @@ module.exports.deleteUser = async (req, res) => {
                 message: "Patient not found"
             });
         }
+
+        // delete related wallet record: 
+        await Wallet.deleteMany({ userId: userId });
 
         // delete related appointment records: 
         // console.log("patient id : ", patient._id);

@@ -3,15 +3,15 @@ const mongoose = require("mongoose");
 const otpSchema = mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'userModel',
+        ref: 'patientModel',
     },
     otpCode: {
         type: String,
     },
     createdAt: {
         type: Date,
-        default: Date.now,
-        expiresAt: 120      // 2 minutes
+        default: Date.now(),
+        expires: 120      // 2 minutes
     }
 });
 

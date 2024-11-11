@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
+const Patient = require("../models/patientModel");
 
 module.exports = async function (req, res, next) {
     // Get token from request headers
@@ -31,7 +32,7 @@ module.exports = async function (req, res, next) {
         // console.log("user id: ", userId);
 
         // finding user from db using user id: 
-        const user = await User.findById(userId);
+        const user = await Patient.findById(userId);
         if (!user) {
             return res.status(404).json({
                 message: "User not found"
