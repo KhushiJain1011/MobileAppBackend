@@ -1,10 +1,12 @@
-const e = require("express");
 const Patient = require("../models/patientModel");
 const User = require("../models/userModel");
 const OTP = require("../models/otpModel");
 const { generateToken, generateOTP, generateEmailVerificationToken } = require("../helper/generate");
 const Token = require("../models/tokenModel");
 const { sendVerificationMail } = require("../helper/sendEmail");
+const multer = require("multer");
+const { cloudinary } = require("../config/cloudinary");
+const { upload } = require("../middlewares/multer");
 
 // USER REGISTRATION:
 module.exports.register = async (req, res) => {
@@ -183,6 +185,54 @@ module.exports.verifyOTP = async (req, res) => {
             accessToken,
             isNewUser: patient.isNewUser
         })
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        })
+    }
+}
+
+// google login:
+module.exports.googleLogin = async (req, res) => {
+    try {
+        const { email, name, id } = req.body;
+        console.log("email, name: ", email, name);
+        if (!email || !name) {
+            return res.status(400).json({
+                success: false,
+                message: "Missing Google User Data"
+            })
+        }
+
+        // check if the user exists by email (Google ID can be used as unique ID as well)
+        let patient = await Patient.findOne({ email });
+        if (patient) {
+            console.log("patient found..", patient);
+            return res.status(200).json({
+                success: true,
+                message: "User exists",
+                exists: true,
+                userId: patient._id
+            })
+        } else {
+            // user does not exists: 
+            console.log("no patient found.. so creating one!!")
+            patient = new Patient({
+                email, name,
+                googleId: id,
+                isNewUser: true,
+            })
+            console.log("new patient: ", patient);
+            await patient.save();
+
+            return res.status(201).json({
+                success: true,
+                message: "New user created",
+                exists: false,
+                userId: patient._id
+            })
+        }
     } catch (error) {
         return res.status(500).json({
             success: false,
@@ -370,7 +420,140 @@ module.exports.verifyEmail = async (req, res) => {
     }
 }
 
+// https://res.cloudinary.com/dnbhzklvb/image/upload/v1731393277/profile_images/67319d372b8cf5ab45f36860_profile.png        // male
+// https://res.cloudinary.com/dnbhzklvb/image/upload/v1731393277/profile_images/67319d372b8cf5ab45f36860_profile.png        // female
 
+
+// UPLOAD (ADD OR EDIT) PROFILE IMAGE: 
+module.exports.uploadProfilePic = async (req, res) => {
+    upload(req, res, async (err) => {
+        if (err instanceof multer.MulterError) {
+            return res.status(400).json({
+                success: false,
+                message: "File size too large.. Maximum size is 1MB only."
+            });
+        } else if (err) {
+            return res.status(400).json({
+                success: false,
+                message: "Error uploading image",
+                error: err
+            })
+        }
+        try {
+            const { userId } = req.params;
+            console.log("id: ", userId);
+
+            const { selectedImage } = req.body;  // This will contain the URL of a pre-provided image
+            console.log("Selected image URL (if any): ", selectedImage);
+
+            // const { userId } = req.params
+            // console.log("user id: ", userId);
+
+            // Check if req.file is available after multer processing
+            console.log("Uploaded file: ", req.file); // <-- Debugging line to check req.file
+
+            if (selectedImage) {
+                // update user's profile to selected provided image: 
+                const patient = await Patient.findById(userId);
+                if (!patient) {
+                    return res.status(404).json({
+                        success: false,
+                        message: "Patient not found"
+                    })
+                }
+
+                patient.profileImg = {
+                    url: selectedImage
+                }
+                await patient.save();
+                return res.status(200).json({
+                    success: true,
+                    message: "Profile image updated successfully.",
+                    profileImageUrl: selectedImage
+                });
+            }
+
+            // If no pre-provided image is selected, handle file upload
+            // Check if the file is provided
+            if (!req.file) {
+                return res.status(400).json({
+                    success: false,
+                    message: "No file provided"
+                });
+            }
+
+            // const user = await User.findById(userId);
+            const patient = await Patient.findById(userId);
+
+            if (!patient) {
+                return res.status(404).json({
+                    message: "Patient not found"
+                })
+            }
+
+            const result = await cloudinary.uploader.upload(req.file.path, {
+                folder: "profile_images",
+                public_id: `${userId}_profile`,
+            })
+
+            patient.profileImg = {
+                key: req.file.filename,
+                url: result.secure_url
+            };
+            await patient.save();
+
+            // console.log("user profile image: ", user.profileImg);
+
+            return res.status(200).json({
+                success: true,
+                message: "Profile image uploaded..",
+                profileImageUrl: result.secure_url
+            })
+        } catch (error) {
+            return res.status(500).json({
+                success: false,
+                message: error.message
+            })
+        }
+    })
+}
+
+// // add pre provided image to all patients: 
+// const addPreProvidedImages = async (req, res) => {
+//     const preProvidedImages = [
+//         {
+//             url: "https://res.cloudinary.com/dnbhzklvb/image/upload/v1731393787/profile_images/67319d372b8cf5ab45f36860_profile.png"        // male
+//         },
+//         {
+//             url: "https://res.cloudinary.com/dnbhzklvb/image/upload/v1731393277/profile_images/67319d372b8cf5ab45f36860_profile.png"        // female
+//         }
+//     ]
+
+//     await Patient.updateMany({}, {
+//         $set: {
+//             preProvidedImages: preProvidedImages
+//         }
+//     })
+// }
+// // addPreProvidedImages().then(() => {
+// //     console.log("Pre-provided images added to all patients");
+// // });
+
+// Logout: 
+module.exports.logout = async (req, res) => {
+    try {
+        res.clearCookie('accessToken');
+        return res.status(200).json({
+            success: true,
+            message: 'Logged out successfully',
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        })
+    }
+}
 
 // module.exports.addPatientDetails = async (req, res) => {
 //     try {

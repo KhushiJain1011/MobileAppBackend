@@ -33,6 +33,12 @@ const patientSchema = mongoose.Schema({
             type: String,
         }
     },
+    preProvidedImages: [
+        {
+            key: { type: String },   // Optional key (could be used for cloud storage if needed)
+            url: { type: String }    // URL of the pre-provided image
+        }
+    ],
     birthDate: {
         type: Date,
     },
