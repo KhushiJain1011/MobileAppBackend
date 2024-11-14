@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken")
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const twilioNumber = process.env.TWILIO_PHONE_NUMBER;
+const admin = require("firebase-admin")
 
 // generating 6 digit otp:
 const generateOTP = async () => {
@@ -51,4 +52,46 @@ const generateEmailVerificationToken = async () => {
     return tokenCode;
 }
 
-module.exports = { generateOTP, sendSMS, generateToken, generateEmailVerificationToken }
+const sendNotification = async (token, title, message) => {
+    console.log("about to send notification")
+    const payload = {
+        notification: {
+            title: title,
+            body: message,
+        }
+    };
+
+    try {
+        await admin.messaging().sendToDevice(token, payload);
+        console.log('Notification sent successfully');
+    } catch (error) {
+        console.error('Error sending notification:', error);
+    }
+}
+
+// const sendNotification = async (fcmToken, title, message, appointmentDetails) => {
+//     try {
+//         // Create a notification payload
+//         const payload = {
+//             notification: {
+//                 title: title,
+//                 body: message,
+//             },
+//             data: {
+//                 appointmentId: appointmentDetails._id,
+//                 doctorId: appointmentDetails.doctor,
+//                 appointmentDate: appointmentDetails.date,
+//                 appointmentTime: appointmentDetails.time,
+//                 status: appointmentDetails.status,
+//             },
+//         };
+
+//         // Send the notification using FCM
+//         await admin.messaging().sendToDevice(fcmToken, payload);
+//         console.log(`Notification sent to ${fcmToken}`);
+//     } catch (error) {
+//         console.error("Error sending notification:", error);
+//     }
+// };
+
+module.exports = { generateOTP, sendSMS, generateToken, generateEmailVerificationToken, sendNotification }

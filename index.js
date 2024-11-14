@@ -10,6 +10,7 @@ const patientRoutes = require("./routes/patientRoutes");
 const appointmentRoutes = require("./routes/appointmentRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
 const walletRoutes = require("./routes/walletRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
 // require('dotenv').config({ path: './.env' });
 
@@ -34,6 +35,7 @@ app.use("/api/patient", patientRoutes);
 app.use("/api/appointment", appointmentRoutes);
 app.use("/api/category", categoryRoutes);
 app.use("/api/wallet", walletRoutes);
+app.use("/api/notifications", notificationRoutes)
 
 mongoose.connect(url)
     .then(() => console.log("CONNECTED TO MONGODB!!"))

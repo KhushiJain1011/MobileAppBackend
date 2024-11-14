@@ -1,37 +1,79 @@
+const multer = require("multer");
+const { upload } = require("../middlewares/multer");
 const Category = require("../models/categoryModel");
+const { cloudinary } = require("../config/cloudinary");
 
 // ADD CATEGORY:
 module.exports.createCategory = async (req, res) => {
-    try {
-        const { name, type, image } = req.body;
-
-        const category = await Category.findOne({ name });
-        if (category) {
+    upload(req, res, async (err) => {
+        if (err instanceof multer.MulterError) {
+            console.log("multer error: ", err)
             return res.status(400).json({
                 success: false,
-                message: "Category already exists"
+                message: "File size too large.. Maximum size is 1MB only."
+            });
+        } else if (err) {
+            console.log("error 02: ", err)
+            return res.status(400).json({
+                success: false,
+                message: "Error uploading image",
+                error: err
             })
         }
+        try {
+            const { name, type } = req.body;
 
-        const newCategory = new Category({
-            name,
-            type,
-            image
-        })
-        await newCategory.save();
+            if (!name) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Please enter a name"
+                })
+            }
 
-        return res.status(201).json({
-            success: true,
-            message: "Category added successfully",
-            newCategory
-        })
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: error.message
-        })
-    }
+            if (!req.file) {
+                return res.status(400).json({
+                    success: false,
+                    message: "No file provided"
+                });
+            }
+
+            const category = await Category.findOne({ name: name });
+            if (category) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Category withh this name already exists"
+                })
+            }
+
+            const result = await cloudinary.uploader.upload(req.file.path, {
+                folder: "category_images",
+                public_id: `${name}`,
+            })
+
+            const newCategory = new Category({
+                name,
+                type,
+                categoryImage: {
+                    key: req.file.filename,
+                    url: result.secure_url
+                }
+            })
+
+            await newCategory.save();
+
+            return res.status(201).json({
+                success: true,
+                message: "Category added!!"
+            })
+        } catch (error) {
+            return res.status(500).json({
+                success: false,
+                message: error.message
+            })
+        }
+    })
 }
+
 
 
 // FETCH CATEGORIES: 

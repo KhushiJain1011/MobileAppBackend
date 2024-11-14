@@ -19,7 +19,16 @@ module.exports.upload = multer({
     fileFilter: (req, file, cb) => {
         checkFileType(file, cb);
     }
-}).single('profileImg');
+}).single('profileImage');
+
+module.exports.upload = multer({
+    storage: storage,
+    limits: { fileSize: maxSize },
+    fileFilter: (req, file, cb) => {
+        checkFileType(file, cb);
+    }
+}).single('categoryImage');
+
 
 
 function checkFileType(file, cb) {

@@ -10,7 +10,7 @@ const categorySchema = new mongoose.Schema({
         enum: ['Speciality', 'Condition'], // e.g., Specialty (Heart Surgeon) or Condition (Heart Attack)
         // required: true
     },
-    image: {
+    categoryImage: {
         key: {
             type: String,
         },

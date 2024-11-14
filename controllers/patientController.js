@@ -428,11 +428,13 @@ module.exports.verifyEmail = async (req, res) => {
 module.exports.uploadProfilePic = async (req, res) => {
     upload(req, res, async (err) => {
         if (err instanceof multer.MulterError) {
+            console.log("multer error: ", err)
             return res.status(400).json({
                 success: false,
                 message: "File size too large.. Maximum size is 1MB only."
             });
         } else if (err) {
+            console.log("error 02: ", err)
             return res.status(400).json({
                 success: false,
                 message: "Error uploading image",
@@ -462,7 +464,7 @@ module.exports.uploadProfilePic = async (req, res) => {
                     })
                 }
 
-                patient.profileImg = {
+                patient.profileImage = {
                     url: selectedImage
                 }
                 await patient.save();
@@ -476,6 +478,7 @@ module.exports.uploadProfilePic = async (req, res) => {
             // If no pre-provided image is selected, handle file upload
             // Check if the file is provided
             if (!req.file) {
+                console.log("no file provided..")
                 return res.status(400).json({
                     success: false,
                     message: "No file provided"
@@ -486,6 +489,7 @@ module.exports.uploadProfilePic = async (req, res) => {
             const patient = await Patient.findById(userId);
 
             if (!patient) {
+                console.log("user not found")
                 return res.status(404).json({
                     message: "Patient not found"
                 })
@@ -496,10 +500,12 @@ module.exports.uploadProfilePic = async (req, res) => {
                 public_id: `${userId}_profile`,
             })
 
-            patient.profileImg = {
+
+            patient.profileImage = {
                 key: req.file.filename,
                 url: result.secure_url
             };
+            console.log("patient.profileImg: ", patient.profileImg);
             await patient.save();
 
             // console.log("user profile image: ", user.profileImg);
@@ -510,6 +516,7 @@ module.exports.uploadProfilePic = async (req, res) => {
                 profileImageUrl: result.secure_url
             })
         } catch (error) {
+            console.log("catch block error: ", error)
             return res.status(500).json({
                 success: false,
                 message: error.message
@@ -547,6 +554,31 @@ module.exports.logout = async (req, res) => {
             success: true,
             message: 'Logged out successfully',
         });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        })
+    }
+}
+
+// UPDATE THE FCM TOKEN (TO SEND NOTIFICATIONS):
+module.exports.updateFCMToken = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const { fcmToken } = req.body;
+        console.log("fcm token fetched to store in user's record: ", fcmToken)
+
+        await Patient.findByIdAndUpdate(
+            userId,
+            { fcmToken },
+        );
+        console.log("FCM TOKEN ADDED TO USER's RECORD SUCCESSFULLY")
+
+        return res.status(200).json({
+            success: true,
+            message: "FCM TOKEN ADDED"
+        })
     } catch (error) {
         return res.status(500).json({
             success: false,

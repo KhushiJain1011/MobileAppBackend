@@ -25,7 +25,7 @@ const patientSchema = mongoose.Schema({
         type: String,
         // required: true,
     },
-    profileImg: {
+    profileImage: {
         key: {
             type: String,
         },
@@ -49,6 +49,10 @@ const patientSchema = mongoose.Schema({
     isNewUser: {
         type: Boolean,
         default: true,
+    },
+    fcmToken: {
+        type: String,  // Store the FCM token as a string
+        default: null, // Default value can be null
     },
     emergencyContactName: {
         type: String,

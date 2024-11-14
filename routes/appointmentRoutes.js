@@ -4,7 +4,7 @@ const { scheduleAppointment, getMyAppointments } = require("../controllers/appoi
 const router = express.Router();
 
 // Schedule an appointment: 
-router.post("/scheduleAppointment", authenticate, scheduleAppointment);
+router.post("/scheduleAppointment/:doctorId", authenticate, scheduleAppointment);
 
 // Get my appointments: 
 router.get("/getMyAppointments", authenticate, getMyAppointments);

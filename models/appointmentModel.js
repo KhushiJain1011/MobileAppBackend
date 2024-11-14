@@ -19,11 +19,11 @@ const appointmentSchema = mongoose.Schema({
         type: String,
         required: true,
     },
-    // status: {
-    //     type: String,
-    //     enum: ['Pending', 'Confirmed', 'Completed', 'Cancelled'],
-    //     default: 'Pending',
-    // },
+    status: {
+        type: String,
+        enum: ['Pending', 'Confirmed', 'Completed', 'Cancelled'],
+        default: 'Pending',
+    },
     // meetingType: {
     //     type: String,
     //     enum: ['Video', 'Voice', 'In-Person'],
@@ -32,6 +32,9 @@ const appointmentSchema = mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now,
+    },
+    remindMeBefore: {
+        type: String,
     }
 });
 

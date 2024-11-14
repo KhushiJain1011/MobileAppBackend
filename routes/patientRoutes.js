@@ -1,5 +1,5 @@
 const express = require("express");
-const { addPatientDetails, register, login, verifyOTP, sendVerifyEmailLink, verifyEmail, googleLogin, logout, uploadProfilePic, addPreProvidedImage } = require("../controllers/patientController");
+const { addPatientDetails, register, login, verifyOTP, sendVerifyEmailLink, verifyEmail, googleLogin, logout, uploadProfilePic, addPreProvidedImage, updateFCMToken } = require("../controllers/patientController");
 const { validate } = require("../middlewares/validate");
 const { registerValidator, loginValidator } = require("../validator/userValidator");
 const authenticate = require("../middlewares/authentication");
@@ -30,6 +30,9 @@ router.post('/google-login', googleLogin);
 
 // Upload profile picture: 
 router.post("/uploadProfilePicture/:userId", uploadProfilePic);
+
+// Update FCM Token: 
+router.post("/updateFCMToken", authenticate, updateFCMToken);
 
 // router.post("/addPatientDetails", authenticate, addPatientDetails);
 

@@ -62,6 +62,10 @@ const doctorSchema = mongoose.Schema({
         type: Boolean,
         default: false
     }, // Indicates if the doctor is currently live streaming
+    fcmToken: {
+        type: String,  // Store the FCM token as a string
+        default: null, // Default value can be null
+    },
 })
 
 
