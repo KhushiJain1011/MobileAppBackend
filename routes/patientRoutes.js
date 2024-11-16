@@ -1,5 +1,5 @@
 const express = require("express");
-const { addPatientDetails, register, login, verifyOTP, sendVerifyEmailLink, verifyEmail, googleLogin, logout, uploadProfilePic, addPreProvidedImage, updateFCMToken } = require("../controllers/patientController");
+const { addPatientDetails, register, login, verifyOTP, sendVerifyEmailLink, verifyEmail, googleLogin, logout, uploadProfilePic, addPreProvidedImage, updateFCMToken, markDoctorFavorite, getFavorites } = require("../controllers/patientController");
 const { validate } = require("../middlewares/validate");
 const { registerValidator, loginValidator } = require("../validator/userValidator");
 const authenticate = require("../middlewares/authentication");
@@ -27,6 +27,12 @@ router.get("/verifyEmail/:token", verifyEmail);
 
 // Google login: 
 router.post('/google-login', googleLogin);
+
+// Mark A Doctor As Favorite: 
+router.post("/markDoctorFavorite/:doctorId", authenticate, markDoctorFavorite);
+
+// Get Favorite Doctors: 
+router.get("/getFavorites", authenticate, getFavorites);
 
 // Upload profile picture: 
 router.post("/uploadProfilePicture/:userId", uploadProfilePic);

@@ -9,4 +9,5 @@ router.post("/scheduleAppointment/:doctorId", authenticate, scheduleAppointment)
 // Get my appointments: 
 router.get("/getMyAppointments", authenticate, getMyAppointments);
 
+
 module.exports = router;

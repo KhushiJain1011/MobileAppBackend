@@ -16,17 +16,20 @@ const doctorSchema = mongoose.Schema({
     city: {
         type: String
     },
+    phoneNo: {
+
+    },
     consultationFee: {
         type: Number,
     },
     experience: {
         type: Number,
-        required: true,
+        // required: true,
     },
     qualificationOne: {
         // degrees or certificates
         type: String,
-        required: true,
+        // required: true,
     },
     qualificationTwo: {
         // degrees or certificates
@@ -35,11 +38,11 @@ const doctorSchema = mongoose.Schema({
     },
     specializationOne: {
         type: String,
-        required: true,
+        // required: true,
     },
     specializationTwo: {
         type: String,
-        required: true,
+        // required: true,
     },
     availableHours: {
         type: Array,
@@ -62,6 +65,10 @@ const doctorSchema = mongoose.Schema({
         type: Boolean,
         default: false
     }, // Indicates if the doctor is currently live streaming
+    isNewDoctor: {
+        type: Boolean,
+        default: true,
+    },
     fcmToken: {
         type: String,  // Store the FCM token as a string
         default: null, // Default value can be null

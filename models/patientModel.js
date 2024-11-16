@@ -63,6 +63,12 @@ const patientSchema = mongoose.Schema({
     emergencyContactRelation: {
         type: String,
     },
+    favoriteDoctors: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'doctorModel'
+        }
+    ]
 })
 
 // After saving a new user, automatically create their wallet with default values: 

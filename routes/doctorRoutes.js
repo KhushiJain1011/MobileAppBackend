@@ -1,10 +1,16 @@
 const express = require("express");
-const { addDoctorDetails, doctorProfile, searchDoctor, searchDoctorByCategory, filterDoctors } = require("../controllers/doctorController");
+const { addDoctorDetails, doctorProfile, searchDoctor, searchDoctorByCategory, filterDoctors, confirmAppointment, updateDoctorFCMToken, register, verifyOTP, doctorLogin } = require("../controllers/doctorController");
 const authenticate = require("../middlewares/authentication");
 const router = express.Router();
 
+// Login: 
+router.post("/login", doctorLogin);
+
+// Verify OTP: 
+router.post("/verifyOTP/:userId", verifyOTP);
+
 // Add Doctor details: 
-router.post("/addDoctorDetails", authenticate, addDoctorDetails);
+router.post("/addDoctorDetails/:userId", addDoctorDetails);
 
 // Get the profile of a doctor: 
 router.get("/doctorProfile/:doctorId", authenticate, doctorProfile);
@@ -17,5 +23,12 @@ router.post("/searchDoctorByCategory", authenticate, searchDoctorByCategory);
 
 // Filter Doctors: 
 router.post("/filterDoctors", authenticate, filterDoctors);
+
+
+// Update FCM Token: 
+router.post("/updateDoctorFCMToken", authenticate, updateDoctorFCMToken);
+
+// Confirm a patient's appointment: 
+router.post("/confirmOrRejectAppointment", confirmAppointment)
 
 module.exports = router;

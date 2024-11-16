@@ -24,8 +24,11 @@ const notificationSchema = mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['sent', 'read', 'archived'],
+        enum: ['pending', 'sent', 'read', 'archived'],
         default: 'sent',
+    },
+    remindAt: {
+        type: String,
     },
     readAt: {
         type: Date,

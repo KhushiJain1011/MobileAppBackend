@@ -1,8 +1,8 @@
 const admin = require('firebase-admin');
 const express = require('express');
-// const bodyParser = require('body-parser');
-
 const serviceAccount = require('../firebase/serviceAccount.json');  // Path to your service account JSON file
+const { getPatientNotifications, getDoctorNotifications } = require('../controllers/notificationController');
+const authenticate = require("../middlewares/authentication");
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
@@ -10,6 +10,13 @@ admin.initializeApp({
 
 
 const router = express.Router();
+
+// Get a patient's notifications: 
+router.get("/getPatientNotifications", authenticate, getPatientNotifications);
+
+// Get a doctor's notifications: 
+router.get("/getDoctorNotifications/:doctorId", getDoctorNotifications);
+
 
 router.post("/sendNotifications", async (req, res) => {
     const { token, title, body } = req.body;

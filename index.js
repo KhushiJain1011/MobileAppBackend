@@ -11,8 +11,7 @@ const appointmentRoutes = require("./routes/appointmentRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
 const walletRoutes = require("./routes/walletRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
-
-// require('dotenv').config({ path: './.env' });
+const reviewRoutes = require("./routes/reviewRoutes");
 
 const PORT = process.env.PORT || 7000;
 const url = process.env.URL
@@ -25,9 +24,13 @@ app.set('view engine', 'ejs'); // Set EJS as the templating engine
 app.set('views', './views'); // Set the views directory
 
 const path = require('path');
+const { scheduleReminderNotifications } = require('./helper/cron');
 app.use(express.static(path.join(__dirname, 'public')));
 
 // console.log("mongo url: ", process.env.URL)
+
+// Start the cron job
+scheduleReminderNotifications();
 
 app.use("/api/user", userRoutes);
 app.use("/api/doctor", doctorRoutes);
@@ -35,12 +38,12 @@ app.use("/api/patient", patientRoutes);
 app.use("/api/appointment", appointmentRoutes);
 app.use("/api/category", categoryRoutes);
 app.use("/api/wallet", walletRoutes);
-app.use("/api/notifications", notificationRoutes)
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/reviews", reviewRoutes);
 
 mongoose.connect(url)
     .then(() => console.log("CONNECTED TO MONGODB!!"))
     .catch((err) => console.error("Failed to connect to MongoDB", err));
-
 
 app.listen(PORT, () => {
     console.log(`SERVER RUNNING ON PORT: ${PORT}`)

@@ -32,9 +32,10 @@ module.exports.createNotification = async (req, res) => {
 // Get all notifications of specific patient: 
 module.exports.getPatientNotifications = async (req, res) => {
     try {
-        const { patientId } = req.params;
-
-        const notifications = await Notification.find({ patientId });
+        // const { patientId } = req.user._id;
+        const userId = req.user._id;
+        console.log("patient id: ", userId);
+        const notifications = await Notification.find({ patientId: userId });
         if (notifications.length === 0) {
             return res.status(400).json({
                 success: false,
@@ -44,7 +45,8 @@ module.exports.getPatientNotifications = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Notifications found!!"
+            message: "Notifications found!!",
+            notifications
         });
     } catch (error) {
         return res.status(500).json({
@@ -70,7 +72,8 @@ module.exports.getDoctorNotifications = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            message: "Notifications found!!"
+            message: "Notifications found!!",
+            notifications
         });
     } catch (error) {
         return res.status(500).json({

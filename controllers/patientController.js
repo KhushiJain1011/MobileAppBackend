@@ -3,25 +3,26 @@ const User = require("../models/userModel");
 const OTP = require("../models/otpModel");
 const { generateToken, generateOTP, generateEmailVerificationToken } = require("../helper/generate");
 const Token = require("../models/tokenModel");
+const Doctor = require("../models/doctorModel");
 const { sendVerificationMail } = require("../helper/sendEmail");
 const multer = require("multer");
 const { cloudinary } = require("../config/cloudinary");
 const { upload } = require("../middlewares/multer");
 
-// USER REGISTRATION:
+// USER REGISTRATION: (PATIENT)
 module.exports.register = async (req, res) => {
     try {
         const { userId } = req.params;
         // getting user details: 
         const { name, email, gender, birthDate, city, emergencyContactName, emergencyContactPhone, emergencyContactRelation } = req.body;
 
-        // if required details are not provided: 
-        if (!name || !email || !gender || !city || !birthDate) {
-            return res.status(400).json({
-                success: false,
-                message: "Provide required details"
-            })
-        }
+        // // if required details are not provided: 
+        // if (!name || !email || !gender || !city || !birthDate) {
+        //     return res.status(400).json({
+        //         success: false,
+        //         message: "Provide required details"
+        //     })
+        // }
 
         // creating record for user(patient): 
         const patient = await Patient.findById(userId);
@@ -58,22 +59,22 @@ module.exports.register = async (req, res) => {
 // USER LOGIN WITH PHONE NUMBER:
 module.exports.login = async (req, res) => {
     try {
-        // getting user's phone no: 
+        // Getting user's phone no: 
         const { phoneNo } = req.body;
         console.log("phone no: ", phoneNo);
 
-        // if phone number is not provided: 
-        if (!phoneNo) {
-            return res.status(400).json({
-                success: false,
-                message: "Provide Phone Number"
-            })
-        }
+        // // if phone number is not provided: 
+        // if (!phoneNo) {
+        //     return res.status(400).json({
+        //         success: false,
+        //         message: "Provide Phone Number"
+        //     })
+        // }
 
         // finding user with phone no: 
         let patient = await Patient.findOne({ phoneNo });
 
-        // if user is not found: 
+        // if user is not found; a new user record (with phone no) will be created and saved to DB; and OTP will be sent to continue:  
         if (!patient) {
             const newPatient = new Patient({ phoneNo });
             await newPatient.save();
@@ -87,8 +88,8 @@ module.exports.login = async (req, res) => {
         // if user is found, generating OTP for user: 
         const providedOTP = await generateOTP();
         console.log("Provided otp code: ", providedOTP);
-
         // console.log("patient._id: ", patient.id);
+
         // if previously any otp for the user exists, removing from DB: 
         await OTP.deleteMany({ userId: patient._id })
 
@@ -220,7 +221,7 @@ module.exports.googleLogin = async (req, res) => {
             console.log("no patient found.. so creating one!!")
             patient = new Patient({
                 email, name,
-                googleId: id,
+                // googleId: id,
                 isNewUser: true,
             })
             console.log("new patient: ", patient);
@@ -523,6 +524,103 @@ module.exports.uploadProfilePic = async (req, res) => {
             })
         }
     })
+}
+
+// MARK A DOCTOR AS FAVOURITE: 
+module.exports.markDoctorFavorite = async (req, res) => {
+    try {
+        // getting patient's id: (from login):
+        const patientId = req.user._id;
+
+        console.log("patient id: ", patientId)
+        // getting doctor's id:
+        const doctorId = req.params.doctorId;
+        console.log("doctor id : ", doctorId)
+        const patient = await Patient.findById(patientId);
+        if (!patient) {
+            return res.status(404).json({
+                success: false,
+                message: "Patient not found"
+            })
+        }
+        const doctor = await Doctor.findById(doctorId);
+        if (!doctor) {
+            return res.status(404).json({
+                success: false,
+                message: "Doctor profile not found",
+            })
+        }
+
+        // console.log("favorites --- ", patient.favoriteDoctors);
+
+        const favorites = patient.favoriteDoctors
+        console.log("favorites --- ", favorites);
+
+        if (patient.favoriteDoctors.length === 0) {
+            patient.favoriteDoctors.push(doctorId);
+            await patient.save();
+            return res.status(200).json({
+                success: true,
+                message: "Doctor added to favorites list",
+                favorites: patient.favoriteDoctors
+            })
+        }
+        if (!patient.favoriteDoctors.includes(doctorId)) {
+            patient.favoriteDoctors.push(doctorId);
+            console.log("favorites: ", patient.favoriteDoctors);
+            await patient.save();
+            return res.status(200).json({
+                success: true,
+                message: "Doctor added to favorites list..",
+                favorites: patient.favoriteDoctors
+            })
+        } else {
+            return res.status(400).json({
+                success: false,
+                message: "Doctor is already in favorites"
+            })
+        }
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        })
+    }
+}
+
+// Get List Of Favorite Doctors: 
+module.exports.getFavorites = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        // console.log("USER == ", req.user)
+        console.log("patient id: ", userId);
+        const patient = await Patient.findById(userId);
+        if (!patient) {
+            return res.status(404).json({
+                success: false,
+                message: "Patient not found"
+            })
+        }
+
+        const favorites = patient.favoriteDoctors;
+
+        if (favorites.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "No doctors marked as favorites"
+            })
+        }
+        return res.status(200).json({
+            success: true,
+            message: "Favorite Doctors Fetched",
+            favorites
+        })
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        })
+    }
 }
 
 // // add pre provided image to all patients: 
