@@ -12,6 +12,8 @@ const categoryRoutes = require("./routes/categoryRoutes");
 const walletRoutes = require("./routes/walletRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
+// const chatRoutes = require("./routes/chatRoutes");
+const callRoutes = require("./routes/callRoutes");
 
 const PORT = process.env.PORT || 7000;
 const url = process.env.URL
@@ -40,6 +42,8 @@ app.use("/api/category", categoryRoutes);
 app.use("/api/wallet", walletRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/reviews", reviewRoutes);
+// app.use("/api/chat", chatRoutes);
+app.use("/api/call", callRoutes);
 
 mongoose.connect(url)
     .then(() => console.log("CONNECTED TO MONGODB!!"))
